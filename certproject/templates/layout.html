@@ -15,9 +15,14 @@
 <body>
     <nav>
         <a href="/">Home</a> |
-        <a href="/renewal">Renewal</a> |
+        {% if first_renewal %}
+            <a href="{% url 'renewal-edit' first_renewal.pk %}">Renewal</a> |
+        {% else %}
+            <span style="color: gray;">No Renewals</span> |
+        {% endif %}
         <a href="/district">District</a> |
-        <a href="/addon">Add-On</a>
+        <a href="/addon">Add-On</a> |
+        <a href="/payments/3/edit/">Payments</a>
     </nav>
     <main>
         {% block content %}

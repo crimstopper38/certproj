@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm # step 1: used for creati
 from django.http import HttpRequest
 
 def register_view(request):
-    if request.method == "POST": # all of this validates  the inpit and then saves the form answers if valid
+    if request.method == "POST": # all of this validates  the input and then saves the form answers if valid
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()

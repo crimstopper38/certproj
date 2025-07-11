@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  Edit Payment
+{% endblock title %}
+
+{% block content %}
+  <h2>Edit Payment Record</h2>
+
+  <p><strong>Payment ID:</strong> {{ payments.id }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_table }}
+    <button type="submit">Save and Next</button>
+  </form>
+
+  <div class="navigation">
+    {% if prev_payment %}
+      <a href="{% url 'payments_edit' prev_payment.pk %}" class="button">Previous</a>
+    {% endif %}
+  </div>
+{% endblock content %}

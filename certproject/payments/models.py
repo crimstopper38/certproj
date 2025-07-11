@@ -1,3 +1,25 @@
 from django.db import models
 
-# Create your models here.
+class Payments(models.Model):
+    id = models.AutoField(primary_key=True)
+    activity = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    employee_id = models.IntegerField()
+    order_num = models.CharField(max_length=50)
+    amt = models.IntegerField()
+    cert_num = models.IntegerField()
+    mpp = models.IntegerField()
+    bank = models.BooleanField()
+    ese = models.DateField(auto_now=False, auto_now_add=False)
+    needs_course = models.BooleanField()
+    has_course = models.DateField(auto_now=False, auto_now_add=False)
+    reading_comp = models.DateField(auto_now=False, auto_now_add=False)
+    needs_fels = models.BooleanField()
+    has_fels = models.DateField(auto_now=False, auto_now_add=False)
+    pending = models.CharField(max_length=50)
+    returned = models.DateField(auto_now=False, auto_now_add=False)
+    done = models.DateField(auto_now=False, auto_now_add=False)
+    alert = models.BooleanField()
+    cert_notes = models.TextField()
+    purchase_notes = models.TextField()
