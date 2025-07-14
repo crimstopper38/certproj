@@ -6,4 +6,24 @@
 
 {% block content %}
     <h2>You've made it add on applications</h2>
+    {% if payments %}
+    <table>
+      <tr>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Amount</th>
+        <th>Order #</th>
+      </tr>
+      {% for payment in payments %}
+        <tr>
+          <td>{{ payment.first_name }}</td>
+          <td>{{ payment.last_name }}</td>
+          <td>${{ payment.amt }}</td>
+          <td>{{ payment.order_num }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No add-on payments found.</p>
+  {% endif %}
 {% endblock content %}

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.generic import UpdateView, TemplateView
+from django.views.generic import UpdateView, TemplateView, ListView
 from .models import Payments
 from .forms import PaymentsForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -34,7 +34,7 @@ class RenewalUpdateview(LoginRequiredMixin, UpdateView):
     context_object_name = 'payments'
 
     def get_queryset(self):
-        qs = Payments.objects.filter(activity='ren')
+        qs = Payments.objects.filter(activity='Ren')
 
         qs = qs.annotate(id_mod=ExpressionWrapper(F('id') % 2, output_field=IntegerField()))
 
@@ -45,11 +45,29 @@ class RenewalUpdateview(LoginRequiredMixin, UpdateView):
             return qs.filter(id_mod=1)
         return qs.none()
 
-class DistrictPaymentsView(TemplateView):
+class DistrictPaymentsView(ListView):
+    model = Payments
     template_name='payments/district.html'
+    context_object_name = 'payments'
 
-class AddonPaymentsView(TemplateView):
+    def get_queryset(self):
+        return Payments.objects.filter(activity='Dist')
+    
+
+class AddonPaymentsView(ListView):
+    model = 'Payments'
     template_name='payments/addon.html'
+    context_object_name = 'payments'
 
-class RenewalDashboard(TemplateView):
+    def get_queryset(self):
+        return Payments.objects.filter(activity='Add')
+    
+
+class RenewalPaymentsView(ListView):
+    model = 'Payments'
     template_name='payments/renewal.html'
+    context_object_name = 'payments'
+
+    def get_queryset(self):
+        return Payments.objects.filter(activity='Ren')
+    
