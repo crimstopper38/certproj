@@ -50,7 +50,7 @@ class DistrictPaymentsView(UpdateView):
     form_class = DistrictForm
     template_name = 'payments/district.html'
     context_object_name = 'payment'
-    success_url = '/payments/district/'
+    print("District Payments Loaded") #DELETE AFTER TESTING
 
     def get_queryset(self):
         return Payments.objects.filter(activity='Dist')
@@ -60,12 +60,17 @@ class DistrictPaymentsView(UpdateView):
         next_payment = Payments.objects.filter(activity='Dist', pk__gt=self.object.pk).order_by('pk').first()
         if next_payment:
             return reverse('district-edit', kwargs={'pk': next_payment.pk})
+        print(f"Redirecting from PK: {self.object.pk}") #DELETE AFTER TESTING
         return reverse('district-edit', kwargs={'pk': self.object.pk})  # Stay on current if none
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['prev_payment'] = Payments.objects.filter(activity='Dist', pk__lt=self.object.pk).order_by('-pk').first()
         return context
+    
+    def form_valid(self, form):
+        print("Form is valid for PK:", self.object.pk)
+        return super().form_valid(form)
     
 
 class AddonPaymentsView(ListView):
