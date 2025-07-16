@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 {% load static %}
+{% load layout_tags %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -16,7 +17,12 @@
     <nav>
         <a href={% url "home-view" %}>Home</a> |
         <a href={% url "renewal-view" %}>Renewals</a> |
-        <a href={% url "district-view" %}>District</a> |
+        {% first_district_pk as dist_pk %}
+        {% if dist_pk %}
+            <a href="{% url 'district-edit' dist_pk %}">District</a> |
+        {% else %}
+            <a href="#">District (no records)</a> |
+        {% endif %}
         <a href={% url "addon-view" %}>Add-On</a> |
         <a href="/payments/3/edit/">Payments</a>
     </nav>

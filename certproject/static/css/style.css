@@ -100,3 +100,27 @@ button:hover {
   text-decoration: none;
   color: white;
 }
+
+.form-row {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  flex: 1;
+}
+
+.navigation-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.nav-left {
+  align-self: flex-start;
+}
+
+.nav-right {
+  align-self: flex-end;
+}

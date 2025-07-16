@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import UpdateView, TemplateView, ListView
 from .models import Payments
-from .forms import PaymentsForm
+from .forms import PaymentsForm, DistrictForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F, ExpressionWrapper, IntegerField
 from django.http import HttpRequest
@@ -45,19 +45,33 @@ class RenewalUpdateview(LoginRequiredMixin, UpdateView):
             return qs.filter(id_mod=1)
         return qs.none()
 
-class DistrictPaymentsView(ListView):
+class DistrictPaymentsView(UpdateView):
     model = Payments
-    template_name='payments/district.html'
-    context_object_name = 'payments'
+    form_class = DistrictForm
+    template_name = 'payments/district.html'
+    context_object_name = 'payment'
+    success_url = '/payments/district/'
 
     def get_queryset(self):
         return Payments.objects.filter(activity='Dist')
     
+    def get_success_url(self):
+        # Skip missing primary keys and go to the next valid record
+        next_payment = Payments.objects.filter(activity='Dist', pk__gt=self.object.pk).order_by('pk').first()
+        if next_payment:
+            return reverse('district-edit', kwargs={'pk': next_payment.pk})
+        return reverse('district-edit', kwargs={'pk': self.object.pk})  # Stay on current if none
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['prev_payment'] = Payments.objects.filter(activity='Dist', pk__lt=self.object.pk).order_by('-pk').first()
+        return context
+    
 
 class AddonPaymentsView(ListView):
     model = 'Payments'
-    template_name='payments/addon.html'
-    context_object_name = 'payments'
+    template_name = 'payments/addon.html'
+    context_object_name = 'payment'
 
     def get_queryset(self):
         return Payments.objects.filter(activity='Add')
