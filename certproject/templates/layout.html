@@ -23,7 +23,13 @@
         {% else %}
             <a href="#">District (no records)</a> |
         {% endif %}
-        <a href={% url "addon-view" %}>Add-On</a> |
+        {% first_addon_pk as add_pk %}
+        {% if add_pk %}
+            <a href="{% url 'addon-edit' add_pk %}">Add-On</a> |
+        {% else %}
+            <a href="#">Add-On (no records)</a> |
+        {% endif %}
+
         <a href="/payments/3/edit/">Payments</a>
     </nav>
     <main>
