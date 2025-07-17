@@ -33,3 +33,4 @@ class DistrictForm(forms.ModelForm):
             if field_name in self.fields:
               self.fields[field_name].disabled = True
 
+
