@@ -12,3 +12,8 @@ def first_district_pk():
 def first_addon_pk():
     payment = Payments.objects.filter(activity__iexact='Add').order_by('pk').first()
     return payment.pk if payment else None
+
+@register.simple_tag
+def first_renewal_pk():
+    payment = Payments.objects.filter(activity__iexact='Ren').order_by('pk').first()
+    return payment.pk if payment else None

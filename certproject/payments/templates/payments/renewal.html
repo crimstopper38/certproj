@@ -5,26 +5,87 @@
 {% endblock title %}
 
 {% block content %}
-  <h2>You've made it to renewal applications</h2>
+  <h3>You've made it to renewal applications</h3>
 
-  {% if payments %}
-    <table>
-      <tr>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Amount</th>
-        <th>Order #</th>
-      </tr>
-      {% for payment in payments %}
-        <tr>
-          <td>{{ payment.first_name }}</td>
-          <td>{{ payment.last_name }}</td>
-          <td>${{ payment.amt }}</td>
-          <td>{{ payment.order_num }}</td>
-        </tr>
-      {% endfor %}
-    </table>
-  {% else %}
-    <p>No renewal payments found.</p>
-  {% endif %}
+  <p><strong>Payment ID:</strong> {{ payment.id }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-row">
+      <div class="form-group">
+        {{ form.first_name.label_tag }}
+        {{ form.first_name }}
+      </div>
+      <div class="form-group">
+        {{ form.last_name.label_tag }}
+        {{ form.last_name }}
+      </div>
+      <div class="form-group">
+        {{ form.employee_id.label_tag }}
+        {{ form.employee_id }}
+      </div>
+    </div>
+
+    <div class ="form-row">
+      <div class="form-group">
+        {{ form.mpp.label_tag }}
+        {{ form.mpp }}
+      </div>
+      <div class="form-group">
+        {{ form.ese.label_tag }}
+        {{ form.ese }}
+      </div>
+    </div>
+
+    <div class ="form-row">
+      <div class="form-group">
+        {{ form.needs_course.label_tag }}
+        {{ form.needs_course }}
+      </div>
+      <div class="form-group">
+        {{ form.has_course.label_tag }}
+        {{ form.has_course }}
+      </div>
+    </div>
+
+    <div class ="form-row">
+      <div class="form-group">
+        {{ form.needs_fels.label_tag }}
+        {{ form.needs_fels }}
+      </div>
+      <div class="form-group">
+        {{ form.has_fels.label_tag }}
+        {{ form.has_fels }}
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        {{ form.order_num.label_tag }}
+        {{ form.order_num }}
+      </div>
+      <div class="form-group">
+        {{ form.done.label_tag }}
+        {{ form.done }}
+      </div>
+    </div>
+
+    <div class ="form-row">
+      <div class="form-group">
+        {{ form.cert_notes.label_tag }}
+        {{ form.cert_notes }}
+      </div>
+      <div class="form-group">
+        {{ form.purchase_notes.label_tag }}
+        {{ form.purchase_notes }}
+      </div>
+    </div>
+
+    <div class="navigation-row">
+    {% if prev_payment %}
+      <a href="{% url 'renewal-edit' prev_payment.pk %}" class="button nav-left">Previous</a>
+    {% endif %}
+    <button type="submit" class="button nav-right">Save and Next</button>
+    </div>
+  </form>
 {% endblock content %}

@@ -48,3 +48,19 @@ class AddonForm(forms.ModelForm):
         for field_name in read_only_fields:
             if field_name in self.fields:
                 self.fields[field_name].disabled = True
+
+class RenewalForm(forms.ModelForm):
+    class Meta:
+        model = Payments
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        read_only_fields = [
+            'activity', 'first_name', 'last_name', 'order_num', 'amt', 'purchase_notes'
+        ]
+
+        for field_name in read_only_fields:
+            if field_name in self.fields:
+                self.fields[field_name].disabled = True

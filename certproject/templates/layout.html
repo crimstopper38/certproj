@@ -16,13 +16,20 @@
 <body>
     <nav>
         <a href={% url "home-view" %}>Home</a> |
-        <a href={% url "renewal-view" %}>Renewals</a> |
+        {% first_renewal_pk as ren_pk %}
+        {% if ren_pk %}
+            <a href="{% url 'renewal-edit' ren_pk %}">Renewals</a> |
+        {% else %}
+            <a href="#">Renewals (no records)</a> |
+        {% endif %}
+
         {% first_district_pk as dist_pk %}
         {% if dist_pk %}
             <a href="{% url 'district-edit' dist_pk %}">District</a> |
         {% else %}
             <a href="#">District (no records)</a> |
         {% endif %}
+
         {% first_addon_pk as add_pk %}
         {% if add_pk %}
             <a href="{% url 'addon-edit' add_pk %}">Add-On</a> |

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import UpdateView, TemplateView, ListView
 from .models import Payments
-from .forms import PaymentsForm, DistrictForm, AddonForm
+from .forms import PaymentsForm, DistrictForm, AddonForm, RenewalForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F, ExpressionWrapper, IntegerField
 from django.http import HttpRequest
@@ -26,24 +26,6 @@ class PaymentsUpdateView(UpdateView):
         # Add previous record context, skipping non-sequential keys
         context['prev_payment'] = Payments.objects.filter(pk__lt=self.object.pk).order_by('-pk').first()
         return context
-
-class RenewalUpdateview(LoginRequiredMixin, UpdateView):
-    model = Payments
-    form_class = PaymentsForm
-    template_name = 'renewal.html'
-    context_object_name = 'payments'
-
-    def get_queryset(self):
-        qs = Payments.objects.filter(activity='Ren')
-
-        qs = qs.annotate(id_mod=ExpressionWrapper(F('id') % 2, output_field=IntegerField()))
-
-        user = self.request.user
-        if user.groups.filter(name='even_access').exists():
-            return qs.filter(id_mod=0)
-        elif user.groups.filter(name='odd_access').exists():
-            return qs.filter(id_mod=1)
-        return qs.none()
 
 class DistrictPaymentsView(UpdateView):
     model = Payments
@@ -89,11 +71,25 @@ class AddonPaymentsView(UpdateView):
         return context
     
 
-class RenewalPaymentsView(ListView):
-    model = 'Payments'
+class RenewalPaymentsView(UpdateView):
+    model = Payments
+    form_class = RenewalForm
     template_name='payments/renewal.html'
-    context_object_name = 'payments'
+    context_object_name = 'payment'
 
     def get_queryset(self):
         return Payments.objects.filter(activity='Ren')
+    
+    def get_success_url(self):
+        # Skip missing primary keys and go to the next valid record
+        next_payment = Payments.objects.filter(activity='Ren', pk__gt=self.object.pk).order_by('pk').first()
+        if next_payment:
+            return reverse('renewal-edit', kwargs={'pk': next_payment.pk})
+        print(f"Redirecting from PK: {self.object.pk}") #DELETE AFTER TESTING
+        return reverse('renewal-edit', kwargs={'pk': self.object.pk})  # Stay on current if none
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['prev_payment'] = Payments.objects.filter(activity='Ren', pk__lt=self.object.pk).order_by('-pk').first()
+        return context
     
