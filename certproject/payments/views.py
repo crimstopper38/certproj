@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.generic import UpdateView, TemplateView, ListView
+from django.views.generic import UpdateView, TemplateView
 from .models import Payments
 from .forms import PaymentsForm, DistrictForm, AddonForm, RenewalForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F, ExpressionWrapper, IntegerField
-from django.http import HttpRequest
+from django.db.models import Q
+from django.db.models.functions import Mod
 
 # Create your views here.
 class PaymentsUpdateView(UpdateView):
@@ -69,27 +69,103 @@ class AddonPaymentsView(UpdateView):
         context = super().get_context_data(**kwargs)
         context['prev_payment'] = Payments.objects.filter(activity='Add', pk__lt=self.object.pk).order_by('-pk').first()
         return context
-    
 
-class RenewalPaymentsView(UpdateView):
-    model = Payments
-    form_class = RenewalForm
-    template_name='payments/renewal.html'
-    context_object_name = 'payment'
+class RenewalSelectView(TemplateView):
+    template_name = 'payments/renewal_select.html'
 
-    def get_queryset(self):
-        return Payments.objects.filter(activity='Ren')
-    
-    def get_success_url(self):
-        # Skip missing primary keys and go to the next valid record
-        next_payment = Payments.objects.filter(activity='Ren', pk__gt=self.object.pk).order_by('pk').first()
-        if next_payment:
-            return reverse('renewal-edit', kwargs={'pk': next_payment.pk})
-        print(f"Redirecting from PK: {self.object.pk}") #DELETE AFTER TESTING
-        return reverse('renewal-edit', kwargs={'pk': self.object.pk})  # Stay on current if none
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['prev_payment'] = Payments.objects.filter(activity='Ren', pk__lt=self.object.pk).order_by('-pk').first()
+
+        annotated_qs = Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(activity='Ren')
+
+        first_all = annotated_qs.order_by('pk').first()
+        first_odd = annotated_qs.filter(mod_pk=1).order_by('pk').first()
+        first_even = annotated_qs.filter(mod_pk=0).order_by('pk').first()
+        first_incomplete = annotated_qs.filter(done__isnull=True).order_by('pk').first()
+
+        context['groups'] = []
+
+        # Example queries — we’ll fine-tune them later
+        if first_odd:
+            context['groups'].append({
+                'label': 'Odd Renewals',
+                'url': reverse('renewal-odd-edit', kwargs={'pk': first_odd.pk})
+            })
+
+        if first_even:
+            context['groups'].append({
+                'label': 'Even Renewals',
+                'url': reverse('renewal-even-edit', kwargs={'pk': first_even.pk})
+            })
+
+        if first_incomplete:
+            context['groups'].append({
+                'label': 'Incomplete Renewals',
+                'url': reverse('renewal-pending-edit', kwargs={'pk': first_incomplete.pk})
+            })
+
+        if first_all:
+            context['groups'].append({
+                'label': 'All Renewals',
+                'url': reverse('renewal-edit', kwargs={'pk': first_all.pk})
+            })
+
         return context
+
+    def _first_pk(self, filter_q):
+        match = Payments.objects.filter(filter_q).order_by('pk').first()
+        return match.pk if match else 0  # You can show a fallback message if match is None
+
+# Parent class for our renewal pages, will all follow the same logic, only filtering is different and done by subclass views
+class FilteredRenewalView(UpdateView):
+    model = Payments
+    form_class = RenewalForm
+    template_name = 'payments/renewal.html'
+    context_object_name = 'payment'
+
+    filter_q = Q(activity='Ren')  # override this per subclass
+    success_url_name = None       # override this per subclass
+
+    def get_queryset(self):
+        return Payments.objects.filter(self.filter_q)
+
+    def get_success_url(self):
+        next_payment = self.get_queryset().filter(pk__gt=self.object.pk).order_by('pk').first()
+        return reverse(self.success_url_name, kwargs={
+            'pk': next_payment.pk if next_payment else self.object.pk
+        })
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['prev_payment'] = self.get_queryset().filter(pk__lt=self.object.pk).order_by('-pk').first()
+        return context
+    
+class OddRenewalView(FilteredRenewalView):
+    success_url_name = 'renewal-odd-edit'
+
+    def get_queryset(self):
+        return Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(
+            activity='Ren',
+            mod_pk=1
+        )
+
+
+class EvenRenewalView(FilteredRenewalView):
+    success_url_name = 'renewal-even-edit'
+
+    def get_queryset(self):
+        return Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(
+            activity='Ren',
+            mod_pk=0
+        )
+
+
+class PendingRenewalView(FilteredRenewalView):
+    filter_q = Q(activity='Ren') & Q(done__isnull=True)
+    success_url_name = 'renewal-pending-edit'
+
+class RenewalPaymentsView(FilteredRenewalView):  # Your existing flow
+    filter_q = Q(activity='Ren')
+    success_url_name = 'renewal-edit'
+
     

@@ -16,12 +16,7 @@
 <body>
     <nav>
         <a href={% url "home-view" %}>Home</a> |
-        {% first_renewal_pk as ren_pk %}
-        {% if ren_pk %}
-            <a href="{% url 'renewal-edit' ren_pk %}">Renewals</a> |
-        {% else %}
-            <a href="#">Renewals (no records)</a> |
-        {% endif %}
+        <a href="{% url 'renewal-select' %}">Renewals</a> |
 
         {% first_district_pk as dist_pk %}
         {% if dist_pk %}
