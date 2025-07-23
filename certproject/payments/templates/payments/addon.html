@@ -4,11 +4,12 @@
     Add-on
 {% endblock title %}
 
-{% block content %}
-  <h3>You've made it to add-on applications</h3>
-
+{% block heading %}
+  <h3 class="title">Addon Payments</h3>
   <p><strong>Payment ID:</strong> {{ payment.id }}</p>
+{% endblock heading %}
 
+{% block content %}
   <form method="post">
     {% csrf_token %}
     <div class="form-row">

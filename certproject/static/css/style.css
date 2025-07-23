@@ -134,6 +134,7 @@ button:hover {
 }
 
 .renewal-select-page .button-grid,
+.addon-select-page .button-grid,
 .district-select-page .button-grid {
   display: flex;
   gap: 20px;
@@ -145,6 +146,7 @@ button:hover {
 }
 
 .renewal-select-page .select-button,
+.addon-select-page .select-button,
 .district-select-page .select-button {
   display: block;
   padding: 20px 30px;
@@ -164,6 +166,7 @@ button:hover {
 }
 
 .renewal-select-page .select-button:hover,
+.addon-select-page .select-button:hover,
 .district-select-page .select-button:hover {
   background-color: #727272;
   border-color: #44B78B;

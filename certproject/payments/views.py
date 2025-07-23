@@ -57,31 +57,10 @@ class DistrictSelectView(TemplateView):
     def _first_pk(self, filter_q):
         match = Payments.objects.filter(filter_q).order_by('pk').first()
         return match.pk if match else 0  # You can show a fallback message if match is None
-
-class DistrictPaymentsView(UpdateView):
-    model = Payments
-    form_class = DistrictForm
-    template_name = 'payments/district.html'
-    context_object_name = 'payment'
-
-    def get_queryset(self):
-        return Payments.objects.filter(activity='Dist')
-    
-    def get_success_url(self):
-        # Skip missing primary keys and go to the next valid record
-        next_payment = Payments.objects.filter(activity='Dist', pk__gt=self.object.pk).order_by('pk').first()
-        if next_payment:
-            return reverse('district-edit', kwargs={'pk': next_payment.pk})
-        return reverse('district-edit', kwargs={'pk': self.object.pk})  # Stay on current if none
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['prev_payment'] = Payments.objects.filter(activity='Dist', pk__lt=self.object.pk).order_by('-pk').first()
-        return context
     
 class FilteredDistrictView(UpdateView):
     model = Payments
-    form_class = RenewalForm
+    form_class = DistrictForm
     template_name = 'payments/district.html'
     context_object_name = 'payment'
 
@@ -110,27 +89,67 @@ class DistrictPaymentsView(FilteredDistrictView):  # Your existing flow
     filter_q = Q(activity='Dist')
     success_url_name = 'district-edit'
 
-class AddonPaymentsView(UpdateView):
+class AddonSelectView(TemplateView):
+    template_name = 'payments/addon_select.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        annotated_qs = Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(activity='Add')
+
+        first_all = annotated_qs.order_by('pk').first()
+        first_incomplete = annotated_qs.filter(done__isnull=True).order_by('pk').first()
+
+        context['addon_groups'] = []
+
+        if first_incomplete:
+            context['addon_groups'].append({
+                'label': 'Pending Addon',
+                'url': reverse('addon-pending-edit', kwargs={'pk': first_incomplete.pk})
+            })
+
+        if first_all:
+            context['addon_groups'].append({
+                'label': 'All Addon',
+                'url': reverse('addon-edit', kwargs={'pk': first_all.pk})
+            })
+
+        return context
+
+    def _first_pk(self, filter_q):
+        match = Payments.objects.filter(filter_q).order_by('pk').first()
+        return match.pk if match else 0  # You can show a fallback message if match is None
+    
+class FilteredAddonView(UpdateView):
     model = Payments
     form_class = AddonForm
     template_name = 'payments/addon.html'
     context_object_name = 'payment'
 
+    filter_q = Q(activity='Add')  # override this per subclass
+    success_url_name = None       # override this per subclass
+
     def get_queryset(self):
-        return Payments.objects.filter(activity='Add')
-    
+        return Payments.objects.filter(self.filter_q)
+
     def get_success_url(self):
-        # Skip missing primary keys and go to the next valid record
-        next_payment = Payments.objects.filter(activity='Add', pk__gt=self.object.pk).order_by('pk').first()
-        if next_payment:
-            return reverse('addon-edit', kwargs={'pk': next_payment.pk})
-        print(f"Redirecting from PK: {self.object.pk}") #DELETE AFTER TESTING
-        return reverse('addon-edit', kwargs={'pk': self.object.pk})  # Stay on current if none
-    
+        next_payment = self.get_queryset().filter(pk__gt=self.object.pk).order_by('pk').first()
+        return reverse(self.success_url_name, kwargs={
+            'pk': next_payment.pk if next_payment else self.object.pk
+        })
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['prev_payment'] = Payments.objects.filter(activity='Add', pk__lt=self.object.pk).order_by('-pk').first()
+        context['prev_payment'] = self.get_queryset().filter(pk__lt=self.object.pk).order_by('-pk').first()
         return context
+    
+class PendingAddonView(FilteredDistrictView):
+    filter_q = Q(activity='Add') & Q(done__isnull=True)
+    success_url_name = 'addon-pending-edit'
+
+class AddonPaymentsView(FilteredDistrictView):  # Your existing flow
+    filter_q = Q(activity='Add')
+    success_url_name = 'addon-edit'
 
 class RenewalSelectView(TemplateView):
     template_name = 'payments/renewal_select.html'

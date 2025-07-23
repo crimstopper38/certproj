@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block title %}
+    Addon Options
+{% endblock title %}
+
+{% block heading %}
+  <h3 class="title">Addon Options</h3>
+{% endblock heading %}
+
+{% block content %}
+<div class="addon-select-page">
+  <div class="button-grid">
+    {% for group in addon_groups %}
+      <a href="{{ group.url }}" class="select-button">
+        {{ group.label }}
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}
