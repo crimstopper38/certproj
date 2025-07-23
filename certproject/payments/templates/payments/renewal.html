@@ -4,11 +4,12 @@
     <h1>Renewals</h1>
 {% endblock title %}
 
-{% block content %}
-  <h3>Renewal Payments</h3>
-
+{% block heading %}
+  <h3 class="title">Renewal Payments</h3>
   <p><strong>Payment ID:</strong> {{ payment.id }}</p>
+{% endblock heading %}
 
+{% block content %}
   <form method="post">
     {% csrf_token %}
     <div class="form-row">

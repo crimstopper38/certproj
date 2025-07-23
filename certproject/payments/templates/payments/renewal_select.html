@@ -1,15 +1,20 @@
 {% extends "layout.html" %}
 {% block title %}
-    Choose a Renewal Option
+    Renewal Options
 {% endblock title %}
 
+{% block heading %}
+  <h3 class="title">Renewal Options</h3>
+{% endblock heading %}
+
 {% block content %}
-<h3>Choose a Renewal Option</h3>
-<div class="button-grid">
-  {% for group in groups %}
-    <a href="{{ group.url }}" class="select-button">
-      {{ group.label }}
-    </a>
-  {% endfor %}
+<div class="renewal-select-page">
+  <div class="button-grid">
+    {% for group in groups %}
+      <a href="{{ group.url }}" class="select-button">
+        {{ group.label }}
+      </a>
+    {% endfor %}
+  </div>
 </div>
 {% endblock content %}

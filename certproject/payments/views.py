@@ -100,7 +100,7 @@ class RenewalSelectView(TemplateView):
 
         if first_incomplete:
             context['groups'].append({
-                'label': 'Incomplete Renewals',
+                'label': 'Pending Renewals',
                 'url': reverse('renewal-pending-edit', kwargs={'pk': first_incomplete.pk})
             })
 
