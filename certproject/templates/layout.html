@@ -17,13 +17,7 @@
     <nav>
         <a href={% url "home-view" %}>Home</a> |
         <a href="{% url 'renewal-select' %}">Renewals</a> |
-
-        {% first_district_pk as dist_pk %}
-        {% if dist_pk %}
-            <a href="{% url 'district-edit' dist_pk %}">District</a> |
-        {% else %}
-            <a href="#">District (no records)</a> |
-        {% endif %}
+        <a href="{% url 'district-select' %}">District</a> |
 
         {% first_addon_pk as add_pk %}
         {% if add_pk %}

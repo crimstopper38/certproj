@@ -133,7 +133,8 @@ button:hover {
   margin-bottom: 20px;
 }
 
-.renewal-select-page .button-grid {
+.renewal-select-page .button-grid,
+.district-select-page .button-grid {
   display: flex;
   gap: 20px;
   justify-content: center;
@@ -143,7 +144,8 @@ button:hover {
   overflow: visible;
 }
 
-.renewal-select-page .select-button {
+.renewal-select-page .select-button,
+.district-select-page .select-button {
   display: block;
   padding: 20px 30px;
   font-size: 1rem;
@@ -161,7 +163,8 @@ button:hover {
   height: auto;
 }
 
-.renewal-select-page .select-button:hover {
+.renewal-select-page .select-button:hover,
+.district-select-page .select-button:hover {
   background-color: #727272;
   border-color: #44B78B;
   transform: translateY(-3px) translateX(-3px);

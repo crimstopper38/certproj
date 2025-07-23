@@ -27,6 +27,37 @@ class PaymentsUpdateView(UpdateView):
         context['prev_payment'] = Payments.objects.filter(pk__lt=self.object.pk).order_by('-pk').first()
         return context
 
+class DistrictSelectView(TemplateView):
+    template_name = 'payments/district_select.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        annotated_qs = Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(activity='Dist')
+
+        first_all = annotated_qs.order_by('pk').first()
+        first_incomplete = annotated_qs.filter(done__isnull=True).order_by('pk').first()
+
+        context['dist_groups'] = []
+
+        if first_incomplete:
+            context['dist_groups'].append({
+                'label': 'Pending District',
+                'url': reverse('district-pending-edit', kwargs={'pk': first_incomplete.pk})
+            })
+
+        if first_all:
+            context['dist_groups'].append({
+                'label': 'All District',
+                'url': reverse('district-edit', kwargs={'pk': first_all.pk})
+            })
+
+        return context
+
+    def _first_pk(self, filter_q):
+        match = Payments.objects.filter(filter_q).order_by('pk').first()
+        return match.pk if match else 0  # You can show a fallback message if match is None
+
 class DistrictPaymentsView(UpdateView):
     model = Payments
     form_class = DistrictForm
@@ -47,6 +78,37 @@ class DistrictPaymentsView(UpdateView):
         context = super().get_context_data(**kwargs)
         context['prev_payment'] = Payments.objects.filter(activity='Dist', pk__lt=self.object.pk).order_by('-pk').first()
         return context
+    
+class FilteredDistrictView(UpdateView):
+    model = Payments
+    form_class = RenewalForm
+    template_name = 'payments/district.html'
+    context_object_name = 'payment'
+
+    filter_q = Q(activity='Dist')  # override this per subclass
+    success_url_name = None       # override this per subclass
+
+    def get_queryset(self):
+        return Payments.objects.filter(self.filter_q)
+
+    def get_success_url(self):
+        next_payment = self.get_queryset().filter(pk__gt=self.object.pk).order_by('pk').first()
+        return reverse(self.success_url_name, kwargs={
+            'pk': next_payment.pk if next_payment else self.object.pk
+        })
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['prev_payment'] = self.get_queryset().filter(pk__lt=self.object.pk).order_by('-pk').first()
+        return context
+    
+class PendingDistrictView(FilteredDistrictView):
+    filter_q = Q(activity='Dist') & Q(done__isnull=True)
+    success_url_name = 'district-pending-edit'
+
+class DistrictPaymentsView(FilteredDistrictView):  # Your existing flow
+    filter_q = Q(activity='Dist')
+    success_url_name = 'district-edit'
 
 class AddonPaymentsView(UpdateView):
     model = Payments
@@ -83,29 +145,28 @@ class RenewalSelectView(TemplateView):
         first_even = annotated_qs.filter(mod_pk=0).order_by('pk').first()
         first_incomplete = annotated_qs.filter(done__isnull=True).order_by('pk').first()
 
-        context['groups'] = []
+        context['ren_groups'] = []
 
-        # Example queries — we’ll fine-tune them later
         if first_odd:
-            context['groups'].append({
+            context['ren_groups'].append({
                 'label': 'Odd Renewals',
                 'url': reverse('renewal-odd-edit', kwargs={'pk': first_odd.pk})
             })
 
         if first_even:
-            context['groups'].append({
+            context['ren_groups'].append({
                 'label': 'Even Renewals',
                 'url': reverse('renewal-even-edit', kwargs={'pk': first_even.pk})
             })
 
         if first_incomplete:
-            context['groups'].append({
+            context['ren_groups'].append({
                 'label': 'Pending Renewals',
                 'url': reverse('renewal-pending-edit', kwargs={'pk': first_incomplete.pk})
             })
 
         if first_all:
-            context['groups'].append({
+            context['ren_groups'].append({
                 'label': 'All Renewals',
                 'url': reverse('renewal-edit', kwargs={'pk': first_all.pk})
             })

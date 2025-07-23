@@ -1,16 +1,16 @@
 {% extends "layout.html" %}
 {% block title %}
-    Renewal Options
+    District Options
 {% endblock title %}
 
 {% block heading %}
-  <h3 class="title">Renewal Options</h3>
+  <h3 class="title">District Options</h3>
 {% endblock heading %}
 
 {% block content %}
-<div class="renewal-select-page">
+<div class="district-select-page">
   <div class="button-grid">
-    {% for group in ren_groups %}
+    {% for group in dist_groups %}
       <a href="{{ group.url }}" class="select-button">
         {{ group.label }}
       </a>
