@@ -79,6 +79,9 @@ class FilteredDistrictView(UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['prev_payment'] = self.get_queryset().filter(pk__lt=self.object.pk).order_by('-pk').first()
+        context['first_payment'] = self.get_queryset().order_by('pk').first()
+        context['last_payment'] = self.get_queryset().order_by('-pk').first()
+        context['success_url_name'] = self.success_url_name
         return context
     
 class PendingDistrictView(FilteredDistrictView):
@@ -141,13 +144,16 @@ class FilteredAddonView(UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['prev_payment'] = self.get_queryset().filter(pk__lt=self.object.pk).order_by('-pk').first()
+        context['first_payment'] = self.get_queryset().order_by('pk').first()
+        context['last_payment'] = self.get_queryset().order_by('-pk').first()
+        context['success_url_name'] = self.success_url_name
         return context
     
-class PendingAddonView(FilteredDistrictView):
+class PendingAddonView(FilteredAddonView):
     filter_q = Q(activity='Add') & Q(done__isnull=True)
     success_url_name = 'addon-pending-edit'
 
-class AddonPaymentsView(FilteredDistrictView):  # Your existing flow
+class AddonPaymentsView(FilteredAddonView):  # Your existing flow
     filter_q = Q(activity='Add')
     success_url_name = 'addon-edit'
 
@@ -207,7 +213,7 @@ class FilteredRenewalView(UpdateView):
     success_url_name = None       # override this per subclass
 
     def get_queryset(self):
-        return Payments.objects.filter(self.filter_q)
+        return Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(self.filter_q)
 
     def get_success_url(self):
         next_payment = self.get_queryset().filter(pk__gt=self.object.pk).order_by('pk').first()
@@ -218,27 +224,18 @@ class FilteredRenewalView(UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['prev_payment'] = self.get_queryset().filter(pk__lt=self.object.pk).order_by('-pk').first()
+        context['first_payment'] = self.get_queryset().order_by('pk').first()
+        context['last_payment'] = self.get_queryset().order_by('-pk').first()
+        context['success_url_name'] = self.success_url_name
         return context
     
 class OddRenewalView(FilteredRenewalView):
     success_url_name = 'renewal-odd-edit'
-
-    def get_queryset(self):
-        return Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(
-            activity='Ren',
-            mod_pk=1
-        )
-
+    filter_q = Q(activity='Ren') & Q(mod_pk=1)
 
 class EvenRenewalView(FilteredRenewalView):
     success_url_name = 'renewal-even-edit'
-
-    def get_queryset(self):
-        return Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(
-            activity='Ren',
-            mod_pk=0
-        )
-
+    filter_q = Q(activity='Ren') & Q(mod_pk=0)
 
 class PendingRenewalView(FilteredRenewalView):
     filter_q = Q(activity='Ren') & Q(done__isnull=True)

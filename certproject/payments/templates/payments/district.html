@@ -84,7 +84,13 @@
 
     <div class="navigation-row">
     {% if prev_payment %}
-      <a href="{% url 'district-edit' prev_payment.pk %}" class="button nav-left">Previous</a>
+      <a href="{% url success_url_name prev_payment.pk %}" class="button nav-left">Previous</a>
+    {% endif %}
+    {% if first_payment %}
+      <a href="{% url success_url_name pk=first_payment.pk %}" class="button">« First</a>
+    {% endif %}
+    {% if last_payment %}
+      <a href="{% url success_url_name pk=last_payment.pk %}" class="button">Last »</a>
     {% endif %}
     <button type="submit" class="button nav-right">Save and Next</button>
     </div>
