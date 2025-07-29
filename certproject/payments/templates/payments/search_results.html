@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Search
+{% endblock title %}
+
+{% block heading %}
+    <h3 class="title">Payment Search</h3>
+    <form method="get" action="{% url 'payment-search' %}" class="search-form">
+        <input type="text" name="q" placeholder="Search by order #, employee ID, or name">
+        <button type="submit" class="search-button">Search</button>
+    </form>
+{% endblock heading %}
+
+{% block content %}
+{% if request.GET.q %}
+    {% if payments %}
+        <table class="payments-table">
+            <thead>
+                <tr>
+                    <th>Activity</th>
+                    <th>Order #</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Employee ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                    <tr>
+                        <td>{{ p.activity }}</td>
+                        <td>{{ p.order_num }}</td>
+                        <td>{{ p.first_name }}</td>
+                        <td>{{ p.last_name }}</td>
+                        <td>{{ p.employee_id }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+    <p>No matching payments found.</p>
+{% endif %}
+{% endif %}
+{% endblock content %}

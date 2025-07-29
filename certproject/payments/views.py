@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.generic import UpdateView, TemplateView
+from django.views.generic import UpdateView, TemplateView, ListView
 from .models import Payments
 from .forms import PaymentsForm, DistrictForm, AddonForm, RenewalForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.db.models import Q, Value
+from django.db.models.functions import Concat
 from django.db.models.functions import Mod
 
 # Create your views here.
@@ -231,11 +232,11 @@ class FilteredRenewalView(UpdateView):
     
 class OddRenewalView(FilteredRenewalView):
     success_url_name = 'renewal-odd-edit'
-    filter_q = Q(activity='Ren') & Q(mod_pk=1)
+    filter_q = Q(activity='Ren') & Q(mod_pk=1) & Q(done__isnull=True)
 
 class EvenRenewalView(FilteredRenewalView):
     success_url_name = 'renewal-even-edit'
-    filter_q = Q(activity='Ren') & Q(mod_pk=0)
+    filter_q = Q(activity='Ren') & Q(mod_pk=0) & Q(done__isnull=True)
 
 class PendingRenewalView(FilteredRenewalView):
     filter_q = Q(activity='Ren') & Q(done__isnull=True)
@@ -245,4 +246,21 @@ class RenewalPaymentsView(FilteredRenewalView):  # Your existing flow
     filter_q = Q(activity='Ren')
     success_url_name = 'renewal-edit'
 
-    
+class PaymentSearchView(ListView):
+    model = Payments
+    template_name = 'payments/search_results.html'
+    context_object_name = 'payments'
+
+    def get_queryset(self):
+        query = self.request.GET.get('q', '').strip()
+        if not query:
+            return Payments.objects.none()
+        
+        return Payments.objects.annotate(
+            full_name=Concat('first_name', Value(' '), 'last_name')).filter(
+            Q(order_num__icontains=query) |
+            Q(employee_id__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(full_name__icontains=query)
+        )

@@ -15,11 +15,12 @@
 </head>
 <body>
     <nav>
-        <a href={% url "home-view" %}>Home</a> |
+        <a href="{% url "home-view" %}">Home</a> |
         <a href="{% url 'renewal-select' %}">Renewals</a> |
         <a href="{% url 'district-select' %}">District</a> |
         <a href="{% url 'addon-select' %}">Addon</a> |
-        <a href="/payments/3/edit/">Payments</a>
+        <a href="/payments/3/edit/">Payments</a> |
+        <a href="{% url "payment-search" %}">Search</a>
     </nav>
 
     {% block heading %}

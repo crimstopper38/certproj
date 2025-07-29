@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import PaymentsUpdateView, DistrictPaymentsView, AddonPaymentsView, RenewalPaymentsView, OddRenewalView, EvenRenewalView, PendingRenewalView, RenewalSelectView, DistrictSelectView, PendingDistrictView, AddonSelectView, PendingAddonView
+from .views import PaymentsUpdateView, DistrictPaymentsView, AddonPaymentsView, RenewalPaymentsView, OddRenewalView, EvenRenewalView, PendingRenewalView, RenewalSelectView, DistrictSelectView, PendingDistrictView, AddonSelectView, PendingAddonView, PaymentSearchView
 
 
 urlpatterns = [
@@ -16,4 +16,5 @@ urlpatterns = [
     path('addon/choose/', AddonSelectView.as_view(), name='addon-select'),
     path('addon/<int:pk>/edit/', AddonPaymentsView.as_view(), name='addon-edit'),
     path('addon/incomplete/<int:pk>/edit/', PendingAddonView.as_view(), name='addon-pending-edit'),
+    path('search/', PaymentSearchView.as_view(), name='payment-search'),
 ]
