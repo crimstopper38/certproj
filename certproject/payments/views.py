@@ -167,8 +167,8 @@ class RenewalSelectView(TemplateView):
         annotated_qs = Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(activity='Ren')
 
         first_all = annotated_qs.order_by('pk').first()
-        first_odd = annotated_qs.filter(mod_pk=1).order_by('pk').first()
-        first_even = annotated_qs.filter(mod_pk=0).order_by('pk').first()
+        first_odd = annotated_qs.filter(OddRenewalView.filter_q).order_by('pk').first()
+        first_even = annotated_qs.filter(EvenRenewalView.filter_q).order_by('pk').first()
         first_incomplete = annotated_qs.filter(done__isnull=True).order_by('pk').first()
 
         context['ren_groups'] = []
@@ -214,8 +214,9 @@ class FilteredRenewalView(UpdateView):
     success_url_name = None       # override this per subclass
 
     def get_queryset(self):
-        return Payments.objects.annotate(mod_pk=Mod('pk', 2)).filter(self.filter_q)
-
+        qs = Payments.objects.annotate(mod_pk=Mod('pk', 2))
+        return qs.filter(self.filter_q)
+    
     def get_success_url(self):
         next_payment = self.get_queryset().filter(pk__gt=self.object.pk).order_by('pk').first()
         return reverse(self.success_url_name, kwargs={
