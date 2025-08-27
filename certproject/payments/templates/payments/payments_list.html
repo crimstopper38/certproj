@@ -1,23 +1,32 @@
 {% extends "layout.html" %}
 
 {% block title %}
-  Edit Payment
+  Payment Records
 {% endblock title %}
 
+{% block heading %}
+  <h3 class="title">Payment Records</h3>
+{% endblock heading %}
+
 {% block content %}
-  <h2>Edit Payment Record</h2>
-
-  <p><strong>Payment ID:</strong> {{ payments.id }}</p>
-
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_table }}
-    <button type="submit">Save and Next</button>
-  </form>
-
-  <div class="navigation">
-    {% if prev_payment %}
-      <a href="{% url 'payments_edit' prev_payment.pk %}" class="button">Previous</a>
-    {% endif %}
-  </div>
+  <table class="payments-table">
+    <thead>
+      <tr>
+        <th>Order #</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Employee ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for payment in payments %}
+        <tr>
+          <td>{{ payment.order_num }}</td>
+          <td>{{ payment.first_name }}</td>
+          <td>{{ payment.last_name }}</td>
+          <td>{{ payment.employee_id }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock content %}

@@ -2,31 +2,18 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import UpdateView, TemplateView, ListView
 from .models import Payments
-from .forms import PaymentsForm, DistrictForm, AddonForm, RenewalForm
+from .forms import DistrictForm, AddonForm, RenewalForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, Value
 from django.db.models.functions import Concat
 from django.db.models.functions import Mod
 
 # Create your views here.
-class PaymentsUpdateView(UpdateView):
+class PaymentsUpdateView(ListView):
     model = Payments
-    form_class = PaymentsForm
     template_name = 'payments/payments_list.html'
     context_object_name = 'payments'
-
-    def get_success_url(self):
-        # Skip missing primary keys and go to the next valid record
-        next_payment = Payments.objects.filter(pk__gt=self.object.pk).order_by('pk').first()
-        if next_payment:
-            return reverse('payments_edit', kwargs={'pk': next_payment.pk})
-        return reverse('payments_edit', kwargs={'pk': self.object.pk})  # Stay on current if none
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Add previous record context, skipping non-sequential keys
-        context['prev_payment'] = Payments.objects.filter(pk__lt=self.object.pk).order_by('-pk').first()
-        return context
+    #paginate_by = 10 use this logic in template to handle changing pages
 
 class DistrictSelectView(TemplateView):
     template_name = 'payments/district_select.html'
